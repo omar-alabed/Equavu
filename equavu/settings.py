@@ -41,12 +41,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'equavu_hr_app.apps.EquavuHrAppConfig',
     'rest_framework',
-    'corsheaders'
+    'corsheaders',
+    'drf_spectacular'
 ]
 
 # Django REST Framework settings
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'PAGE_SIZE': 10,
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
@@ -205,4 +207,13 @@ LOGGING = {
             'propagate': True,
         },
     },
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Equavo HR API',
+    'DESCRIPTION': 'API for Equavo HR System',
+    'VERSION': '1.0.0',
+    'CONTACT': {
+        'name': 'Developer',
+        'email': 'o.alabed94@gmail.com'}
 }
