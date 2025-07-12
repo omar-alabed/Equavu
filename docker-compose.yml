@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: equavu_hr
+      MYSQL_USER: equavu
+      MYSQL_PASSWORD: equavu_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Django Backend
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DB_NAME=equavu_hr
+      - DB_USER=equavu
+      - DB_PASSWORD=equavu_password
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DEBUG=False
+      - ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0,backend,frontend
+    volumes:
+      - ./media:/app/media
+      - ./logs:/app/logs
+      - ./staticfiles:/app/staticfiles
+    ports:
+      - "8000:8000"
+    command: >
+      bash -c "python manage.py makemigrations &&
+               python manage.py migrate &&
+               python manage.py collectstatic --noinput &&
+               gunicorn equavu.wsgi:application --bind 0.0.0.0:8000"
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: always
+    depends_on:
+      - backend
+    volumes:
+      - ./staticfiles:/usr/share/nginx/html/django-static
+      - ./media:/usr/share/nginx/html/media
+    ports:
+      - "80:80"
+
+volumes:
+  mysql_data:
