@@ -217,3 +217,12 @@ SPECTACULAR_SETTINGS = {
         'name': 'Developer',
         'email': 'o.alabed94@gmail.com'}
 }
+
+# Email configuration for candidate notifications
+DEFAULT_FROM_EMAIL = 'equavuapp@gmail.com'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'equavuapp@gmail.com'
+EMAIL_HOST_PASSWORD = 'uexo mwpd kpxk wzwt'  # Use environment variable or secure storage for production
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False

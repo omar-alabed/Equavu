@@ -1,9 +1,11 @@
 from django.shortcuts import get_object_or_404
 from django.http import FileResponse
-from rest_framework import status, permissions, generics, filters
+from rest_framework import status, permissions, generics, filters, serializers
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
+
+from .email_utils import send_candidate_email
 from .models import Candidate, StatusChange, ApplicationStatus
 from .serializers import (
     CandidateListSerializer,
@@ -62,16 +64,30 @@ class CandidateRegistrationView(generics.CreateAPIView):
     def perform_create(self, serializer):
         logger.info(f"New candidate registration: {serializer.validated_data.get('full_name')}")
         candidate = serializer.save(current_status=ApplicationStatus.SUBMITTED)
+        try:
+            # Create initial status change record
+            StatusChange.objects.create(
+                candidate=candidate,
+                previous_status=None,
+                new_status=ApplicationStatus.SUBMITTED,
+                feedback="Application submitted successfully."
+            )
 
-        # Create initial status change record
-        StatusChange.objects.create(
-            candidate=candidate,
-            previous_status=None,
-            new_status=ApplicationStatus.SUBMITTED,
-            feedback="Application submitted successfully."
-        )
+            # Send registration email
+            subject = "Your Application Has Been Submitted"
+            message = (f"Dear {candidate.full_name},\n\n"
+                       f"Thank you for registering and submitting your application to the {candidate.department} "
+                       f"department. We will review your application and keep you updated.\n\n"
+                       f"To track your application please use the following ID:{candidate.id}\n\n"
+                       f"Best regards,\nHR Team")
+            send_candidate_email(subject, message, candidate.email)
 
-        return candidate
+            return candidate
+
+        except Exception as e:
+            logger.error(f"Error during candidate registration: {str(e)}")
+            raise serializers.ValidationError("An error occurred while processing your registration."
+                                              " Please try again later.")
 
 
 # Candidate Status View
@@ -157,6 +173,16 @@ class StatusUpdateView(generics.UpdateAPIView):
             candidate.save()
 
             logger.info(f"Status updated for candidate {candidate.id}: {new_status}")
+            try:
+                # Send status change email
+                subject = f"Application Status Update: {candidate.get_current_status_display()}"
+                message = (f"Dear {candidate.full_name},\n\n"
+                           f"Your application #{candidate.id} status has been updated to: "
+                           f"{candidate.get_current_status_display()}.\n\n"
+                           f"Feedback: {feedback}\n\nBest regards,\nHR Team")
+                send_candidate_email(subject, message, candidate.email)
+            except Exception as e:
+                logger.error(f"Error sending status update email for candidate {candidate.id}: {str(e)}")
 
             # Return updated candidate details
             return Response({
