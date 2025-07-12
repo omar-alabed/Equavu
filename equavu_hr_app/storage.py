@@ -4,6 +4,7 @@ This allows for easy switching between local and cloud storage solutions.
 """
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
+from storages.backends.s3boto3 import S3Boto3Storage
 import os
 
 
@@ -12,7 +13,6 @@ class StorageManager:
     Storage manager that provides an abstraction over different storage backends.
     Currently implements local file storage, but can be extended to support
     cloud storage solutions like AWS S3, Google Cloud Storage, etc.
-    TODO: Implement AWS S3 .
     """
 
     @staticmethod
@@ -23,7 +23,18 @@ class StorageManager:
         based on settings.
         """
         # Default to local file storage
-        return LocalStorage()
+        if getattr(settings, "USE_S3", False):
+            return S3Storage()
+        else:
+            return LocalStorage()
+
+
+class S3Storage(S3Boto3Storage):
+    """
+    S3 storage implementation using django-storages and boto3.
+    """
+    def __init__(self):
+        super().__init__()
 
 
 class LocalStorage(FileSystemStorage):

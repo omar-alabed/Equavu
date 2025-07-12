@@ -3,6 +3,7 @@ from django.core.validators import MinValueValidator, FileExtensionValidator
 from django.utils import timezone
 import os
 import uuid
+from equavu_hr_app.storage import StorageManager
 
 
 class Department(models.TextChoices):
@@ -43,7 +44,8 @@ class Candidate(models.Model):
     department = models.CharField(max_length=20, choices=Department.choices)
     resume = models.FileField(
         upload_to=resume_upload_path,
-        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'docx'])]
+        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'docx'])],
+        storage=StorageManager.get_storage()
     )
     current_status = models.CharField(
         max_length=30,

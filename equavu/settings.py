@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'equavu_hr_app.apps.EquavuHrAppConfig',
     'rest_framework',
     'corsheaders',
-    'drf_spectacular'
+    'drf_spectacular',
+    'storages',  # For S3 storage support
 ]
 
 # Django REST Framework settings
@@ -218,7 +219,7 @@ SPECTACULAR_SETTINGS = {
         'email': 'o.alabed94@gmail.com'}
 }
 
-# Email configuration for candidate notifications
+# NOTE: THE FOLLOWING EMAIL CONFIGURATION IS FOR DEMONSTRATION PURPOSES ONLY.
 DEFAULT_FROM_EMAIL = 'equavuapp@gmail.com'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
@@ -226,3 +227,20 @@ EMAIL_HOST_USER = 'equavuapp@gmail.com'
 EMAIL_HOST_PASSWORD = 'uexo mwpd kpxk wzwt'  # Use environment variable or secure storage for production
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
+
+# NOTE: THE FOLLOWING S3 CONFIGURATION IS FOR DEMONSTRATION PURPOSES ONLY.
+USE_S3 = True  # Set to True to use S3, False for local storage
+
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = 'equavu'
+AWS_S3_REGION_NAME = 'eu-central-1'
+AWS_DEFAULT_ACL = None
+AWS_QUERYSTRING_AUTH = False
+AWS_HEADERS = {'Access-Control-Allow-Origin': '*'}
+AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',
+}
+MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
+DEFAULT_FILE_STORAGE = 'equavo_hr_app.storage.S3Storage' if USE_S3 else 'django.core.files.storage.FileSystemStorage'

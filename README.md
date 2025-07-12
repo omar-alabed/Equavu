@@ -8,6 +8,10 @@ A minimal HR system allowing job applicants to register as candidates and upload
 - Registration with personal details and resume upload
 - Application status tracking
 - Resume validation and storage
+- Email notifications on status changes and registration confirmation
+- Conditional Resume Storage: Resumes are stored locally or uploaded to Amazon S3, depending on configuration.
+If S3 is enabled in settings, resumes are uploaded securely to your S3 bucket;
+otherwise, they are saved in the local media/resumes directory.
 
 ### Admin Functionality
 - List candidates with filtering and pagination
@@ -20,10 +24,6 @@ A minimal HR system allowing job applicants to register as candidates and upload
 - **Swagger Documentation**: Interactive API documentation
 - **Comprehensive Tests**: Unit and integration tests
 - **Docker Support**: Easy deployment with Docker Compose
-
-## Email Notifications
-
-The system sends email notifications to candidates when their application status changes.
 
 ## Technology Stack
 
